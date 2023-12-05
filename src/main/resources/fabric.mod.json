@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "meteor-scripts",
+  "version": "${version}",
+  "name": "Meteor Python Script API",
+  "description": "An Addon that allows Users to create their own modules using python.",
+  "authors": [
+    "CrytoPal"
+  ],
+  "contact": {
+    "repo": "https://github.com/CrytoPal/meteor-scripts-api"
+  },
+  "icon": "assets/template/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "uk.cryo.scripts.API"
+    ]
+  },
+  "mixins": [
+    "scripts.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "225,25,25"
+  },
+  "depends": {
+    "java": ">=17",
+    "minecraft": ">=${mc_version}",
+    "meteor-client": "*"
+  }
+}
