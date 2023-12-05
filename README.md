@@ -32,6 +32,25 @@ def onDeactivate():
 
 ```
 
+Although, the code must be obfuscated through minecraft's mappings. For example
+
+```python
+
+from net.minecraft import class_310
+from net.minecraft import class_2561
+
+mc = class_310.method_1551()
+
+def onTickPre():
+    mc.field_1724.method_5728(True)
+
+def onActivate():
+    mc.field_1724.method_43496(class_2561.method_30163("Just Enabled Sprint"))
+
+def onDeactivate():
+    mc.field_1724.method_43496(class_2561.method_30163("Just Disabled Sprint"))
+```
+
 ### How does it work?
 It uses Jython's Python to Java library to convert your Python code to Java code. My API then checks for any Event Handlers like (for now) Tick Events, Activate, and Deactivate.
 

@@ -27,12 +27,14 @@ public class API extends MeteorAddon {
 
         PythonInterpreter translationPython = new PythonInterpreter();
 
+        byte[] array = new byte[100];
+
         for (File s : SCRIPTS_FOLDER.listFiles()) {
             LOG.info("Loading " + s.getName() + " script");
 
             translationPython.execfile(s.getAbsolutePath());
 
-            Module mod = new Module(Scripts, s.getName().replace(".py", ""), "lol") {
+            Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
 
                 @Override
                 public void onActivate() {
@@ -42,16 +44,17 @@ public class API extends MeteorAddon {
                 }
 
                 @EventHandler
-                private void onTickEventPre(TickEvent.Pre event) {
+                public void onTickEventPre(TickEvent.Pre event) {
                     try {
-                        translationPython.exec("onTickEventPre()");
+                        translationPython.exec("onTickPre()");
                     } catch (Exception ignored) {}
                 }
 
+
                 @EventHandler
-                private void onTickEventPost(TickEvent.Post event) {
+                public void onTickEventPost(TickEvent.Post event) {
                     try {
-                        translationPython.exec("onTickEventPost()");
+                        translationPython.exec("onTickPost()");
                     } catch (Exception ignored) {}
                 }
 
@@ -75,6 +78,6 @@ public class API extends MeteorAddon {
 
     @Override
     public String getPackage() {
-        return "com.example.addon";
+        return "uk.cryo.scripts";
     }
 }
