@@ -66,7 +66,6 @@ public class API extends MeteorAddon {
                         "        wrapped_func.__wrapped__[\"event\"] = self.event\n" +
                         "        wrapped_func.__wrapped__[\"func\"] = func\n" +
                         "        return wrapped_func");
-                    translationPython.set("mc", mc);
                     translationPython.exec(readFileAsString(s.getAbsolutePath()));
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
