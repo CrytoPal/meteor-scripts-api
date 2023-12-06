@@ -25,9 +25,9 @@ But here's an example piece of code
 ```python
 from net.minecraft.client import MinecraftClient
 from net.minecraft.text import Text
+from meteordevelopment.meteorclient.events.world import TickEvent
 
-mc = MinecraftClient.getInstance()
-
+@EventHandler(TickEvent.Pre)
 def onTickEventPre():
     mc.player.setSprinting(True)
 
@@ -36,6 +36,8 @@ def onActivate():
 
 def onDeactivate():
     mc.player.sendMessage(Text.of("Just Disabled Sprint"))
+    mc.player.setSprinting(False)
+
 
 ```
 
@@ -57,42 +59,7 @@ function onDeactivate()
 end
 ```
 
-Although, the code must be obfuscated through minecraft's mappings. For example
-
-### Python
-
-```python
-
-from net.minecraft import class_310
-from net.minecraft import class_2561
-
-mc = class_310.method_1551()
-
-def onTickPre():
-    mc.field_1724.method_5728(True)
-
-def onActivate():
-    mc.field_1724.method_43496(class_2561.method_30163("Just Enabled Sprint"))
-
-def onDeactivate():
-    mc.field_1724.method_43496(class_2561.method_30163("Just Disabled Sprint"))
-```
-### Lua
-
-```lua
-function onActivate()
-    print("Hello from Lua!")
-end
-
-function onTickPre()
-     mc.field_1724:method_5728(true)
-end
-
-function onDeactivate()
-    print("Goodbye from Lua!")
-    mc.field_1724:method_5728(false)
-end
-```
+Although, the code must be obfuscated through minecraft's mappings. Our API does that automatically for you so you don't have to worry about that.
 
 ### How does it work?
 It uses Jython's Python to Java library to convert your Python code to Java code. My API then checks for any Event Handlers like (for now) Tick Events, Activate, and Deactivate.
