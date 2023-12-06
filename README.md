@@ -62,8 +62,8 @@ end
 Although, the code must be obfuscated through minecraft's mappings. Our API does that automatically for you so you don't have to worry about that.
 
 ### How does it work?
-It uses Jython's Python to Java library to convert your Python code to Java code. My API then checks for any Event Handlers like (for now) Tick Events, Activate, and Deactivate.
-It also uses Luaj to convert your Lua code to Java code and execture it. My API then checks for any Event Handlers like (for now) Tick Events, Activate, and Deactivate.
+It uses Jython's Python to Java library to convert your Python code to Java code. My API then checks for any Events like Tick Events.
+It also uses Luaj to convert your Lua code to Java code and execture it. My API then checks for any Event like Tick Events
 
 ### Credits
 - [Jython](https://www.jython.org/) for their Library.
