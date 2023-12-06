@@ -10,6 +10,7 @@ public class JythonListener<T> implements IListener {
     private final int priority;
     private final PythonInterpreter interpreter;
     private final String function;
+
     private final Module module;
 
     public JythonListener(Module module, Class<T> target, int priority, PythonInterpreter interpreter, String function, boolean takesEventParam) {

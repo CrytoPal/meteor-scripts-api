@@ -6,12 +6,17 @@ import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.widgets.WWidget;
+import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.utils.Utils;
+import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
@@ -21,15 +26,15 @@ import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.CoerceLuaToJava;
 import org.luaj.vm2.lib.jse.JsePlatform;
-import org.python.core.Py;
-import org.python.core.PyObject;
-import org.python.core.PyString;
-import org.python.core.PyType;
+import org.python.core.*;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
-
+import uk.cryo.scripts.utils.Mappings;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
@@ -43,6 +48,8 @@ public class API extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing Meteor Scripts");
+        Mappings.addMappings();
+        LOG.info("Initializing Script Mappings");
 
         if (!SCRIPTS_FOLDER.exists()) SCRIPTS_FOLDER.mkdir();
 
@@ -64,7 +71,7 @@ public class API extends MeteorAddon {
                         "        wrapped_func.__wrapped__[\"func\"] = func\n" +
                         "        return wrapped_func");
                     translationPython.set("mc", mc);
-                    translationPython.execfile(s.getAbsolutePath());
+                    translationPython.exec(readFileAsString(s.getAbsolutePath()));
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
                         {
@@ -299,10 +306,16 @@ public class API extends MeteorAddon {
                                 }
                             }
                         }
+
                         @Override
                         public void onActivate() {
-                            LuaValue function = globals.get("onActivate");
-                            if (function.isfunction()) function.call();
+                            try {
+                                LuaValue function = globals.get("onActivate");
+                                if (function.isfunction()) function.call();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                super.onActivate();
+                            }
                         }
 
                         @Override
@@ -317,6 +330,7 @@ public class API extends MeteorAddon {
                         }
                     };
                     globals.set("module", CoerceJavaToLua.coerce(mod));
+
                     Modules.get().add(mod);
                 }
             }
@@ -331,5 +345,23 @@ public class API extends MeteorAddon {
     @Override
     public String getPackage() {
         return "uk.cryo.scripts";
+    }
+
+    public String readFileAsString(String fileName) {
+        String text = "";
+        try {
+            text = new String(Files.readAllBytes(Path.of(fileName)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String textv2 = text;
+
+        for (int i = 0; i < Mappings.obfuscatedMap.size();) {
+            if (Mappings.nonObfuscatedMap.get(i) != null) {
+                textv2 = textv2.replace(Mappings.nonObfuscatedMap.get(i), Mappings.obfuscatedMap.get(i));
+                i += 1;
+            }
+        }
+        return textv2;
     }
 }
