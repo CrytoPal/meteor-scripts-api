@@ -1,5 +1,7 @@
 package uk.cryo.scripts.utils;
 
+import net.minecraft.client.MinecraftClient;
+
 import java.util.ArrayList;
 
 public class Mappings {
@@ -8,8 +10,10 @@ public class Mappings {
     public static ArrayList<String> nonObfuscatedMap = new ArrayList<String>();
 
     public static void addMappings() {
-        obfuscatedMap.add("class_310.method_1551()");
-        nonObfuscatedMap.add("mc");
+        obfuscatedMap.add("class_310");
+        nonObfuscatedMap.add("MinecraftClient");
+        obfuscatedMap.add("method_1551()");
+        nonObfuscatedMap.add("getInstance()");
         obfuscatedMap.add("field_1724");
         nonObfuscatedMap.add("player");
         obfuscatedMap.add("net.minecraft");

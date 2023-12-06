@@ -25,8 +25,11 @@ import org.luaj.vm2.lib.jse.JsePlatform;
 import org.python.core.*;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
+import uk.cryo.scripts.utils.Mappings;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -41,6 +44,8 @@ public class API extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing Meteor Scripts");
+        Mappings.addMappings();
+        LOG.info("Initializing Script Mappings");
 
         if (!SCRIPTS_FOLDER.exists()) SCRIPTS_FOLDER.mkdir();
 
@@ -62,7 +67,7 @@ public class API extends MeteorAddon {
                         "        wrapped_func.__wrapped__[\"func\"] = func\n" +
                         "        return wrapped_func");
                     translationPython.set("mc", mc);
-                    translationPython.execfile(s.getAbsolutePath());
+                    translationPython.exec(readFileAsString(s.getAbsolutePath()));
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
                         {
@@ -315,5 +320,23 @@ public class API extends MeteorAddon {
     @Override
     public String getPackage() {
         return "uk.cryo.scripts";
+    }
+
+    public String readFileAsString(String fileName) {
+        String text = "";
+        try {
+            text = new String(Files.readAllBytes(Path.of(fileName)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String textv2 = text;
+
+        for (int i = 0; i < Mappings.obfuscatedMap.size();) {
+            if (Mappings.nonObfuscatedMap.get(i) != null) {
+                textv2 = textv2.replace(Mappings.nonObfuscatedMap.get(i), Mappings.obfuscatedMap.get(i));
+                i += 1;
+            }
+        }
+        return textv2;
     }
 }
