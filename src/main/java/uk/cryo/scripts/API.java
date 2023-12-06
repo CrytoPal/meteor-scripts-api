@@ -6,32 +6,34 @@ import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.widgets.WWidget;
-import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import meteordevelopment.meteorclient.utils.Utils;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaFunction;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
+import org.luaj.vm2.lib.jse.CoerceLuaToJava;
 import org.luaj.vm2.lib.jse.JsePlatform;
-import org.python.core.*;
+import org.python.core.Py;
+import org.python.core.PyObject;
+import org.python.core.PyString;
+import org.python.core.PyType;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
+@SuppressWarnings("CallToPrintStackTrace")
 public class API extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
     public static final Category Scripts = new Category("Scripts");
@@ -76,7 +78,7 @@ public class API extends MeteorAddon {
                                         PyObject codeObject = wrapped.__getitem__(Py.newString("func")).__getattr__("__code__");
                                         PyObject argNames = codeObject.__getattr__("co_varnames");
                                         PyString[] argNamesArray = (PyString[]) argNames.__tojava__(PyString[].class);
-                                        JythonListener listener = new JythonListener<>(((PyType) wrapperEvent).getProxyType(), translationPython, name.asString(), argNamesArray.length >= 1);
+                                        JythonListener listener = new JythonListener<>(this, ((PyType) wrapperEvent).getProxyType(), translationPython, name.asString(), argNamesArray.length >= 1);
                                         MeteorClient.EVENT_BUS.subscribe(listener);
                                     }
                                 }
@@ -268,7 +270,11 @@ public class API extends MeteorAddon {
                 } else if (s.getName().contains(".lua")) {
                     Globals globals = JsePlatform.standardGlobals();
                     globals.set("mc", CoerceJavaToLua.coerce(mc));
-                    Reader reader = null;
+                    globals.set("eventHandlers", new LuaTable());
+                    globals.load("function eventHandler(func, event)\n" +
+                        "    table.insert(eventHandlers, {func = func, event = event})\n" +
+                        "end").call();
+                    Reader reader;
                     try {
                         reader = new BufferedReader(new FileReader(s));
                     } catch (FileNotFoundException e) {
@@ -277,30 +283,40 @@ public class API extends MeteorAddon {
                     LuaValue chunk = globals.load(reader, "script");
                     chunk.call();
                     Module mod = new Module(Scripts, s.getName().replace(".lua", ""), "") {
+                        {
+                            LuaValue eventHandlers = globals.get("eventHandlers");
+                            if (eventHandlers.istable()) {
+                                LuaValue length = eventHandlers.len();
+                                for (int i = 1; i <= length.toint(); i++) {
+                                    LuaValue eventHandler = eventHandlers.get(i);
+                                    LuaValue func = eventHandler.get("func");
+                                    LuaValue event = eventHandler.get("event");
+                                    if (!func.isnil() && !event.isnil()) {
+
+                                        LuaJListener listener = new LuaJListener<>(((Class<?>)event.touserdata()), func, func.narg() >= 1);
+                                        MeteorClient.EVENT_BUS.subscribe(listener);
+                                    }
+                                }
+                            }
+                        }
                         @Override
                         public void onActivate() {
                             LuaValue function = globals.get("onActivate");
                             if (function.isfunction()) function.call();
                         }
 
-                        @EventHandler
-                        private void onTickEvent(TickEvent.Post event) {
-                            LuaValue function = globals.get("onTickPost");
-                            if (function.isfunction()) function.call();
-                        }
-
-                        @EventHandler
-                        private void onTickEvent(TickEvent.Pre event) {
-                            LuaValue function = globals.get("onTickPre");
-                            if (function.isfunction()) function.call();
-                        }
-
                         @Override
                         public void onDeactivate() {
-                            LuaValue function = globals.get("onDeactivate");
-                            if (function.isfunction()) function.call();
+                            try {
+                                LuaValue function = globals.get("onDeactivate");
+                                if (function.isfunction()) function.call();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                super.onDeactivate();
+                            }
                         }
                     };
+                    globals.set("module", CoerceJavaToLua.coerce(mod));
                     Modules.get().add(mod);
                 }
             }
