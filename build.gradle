@@ -19,6 +19,9 @@ repositories {
         name = "Meteor Dev Snapshots"
         url = "https://maven.meteordev.org/snapshots"
     }
+    maven {
+        url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
+    }
     mavenCentral()
 }
 
@@ -40,8 +43,14 @@ dependencies {
     //DevAuth
     library('org.python:jython-standalone:2.7.3')
 
+    implementation 'org.luaj:luaj-jse:3.0.1'
+    include 'org.luaj:luaj-jse:3.0.1'
+
     // Meteor
     modImplementation "meteordevelopment:meteor-client:${project.meteor_version}"
+
+    //DevAuth
+    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.1.2")
 }
 
 shadowJar {
