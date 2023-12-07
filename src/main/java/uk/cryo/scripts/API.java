@@ -14,6 +14,7 @@ import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.utils.misc.Version;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
@@ -69,7 +70,7 @@ public class API extends MeteorAddon {
                         "        wrapped_func.__wrapped__[\"func\"] = func\n" +
                         "        return wrapped_func");
                     translationPython.set("mc", mc);
-                    translationPython.exec(applyCode(s.getAbsolutePath(), false)); // Change false to true if you're in developer environment, it stops any mapping to the scripts.
+                    translationPython.exec(applyCode(s.getAbsolutePath(), FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace().equals("named")));
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
                         JythonListener listener;
