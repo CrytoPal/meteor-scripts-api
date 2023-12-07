@@ -69,7 +69,7 @@ public class API extends MeteorAddon {
                         "        wrapped_func.__wrapped__[\"func\"] = func\n" +
                         "        return wrapped_func");
                     translationPython.set("mc", mc);
-                    translationPython.exec(readFileAsString(s.getAbsolutePath()));
+                    translationPython.exec(applyCode(s.getAbsolutePath(), false)); // Change false to true if you're in developer environment, it stops any mapping to the scripts.
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
                         JythonListener listener;
@@ -326,7 +326,7 @@ public class API extends MeteorAddon {
         return "uk.cryo.scripts";
     }
 
-    public String readFileAsString(String fileName) {
+    public String applyCode(String fileName, boolean devmode) {
         String text = "";
         try {
             text = new String(Files.readAllBytes(Path.of(fileName)));
@@ -335,10 +335,12 @@ public class API extends MeteorAddon {
         }
         String textv2 = text;
 
-        for (int i = 0; i < Mappings.obfuscatedMap.size();) {
-            if (Mappings.nonObfuscatedMap.get(i) != null) {
-                textv2 = textv2.replace(Mappings.nonObfuscatedMap.get(i), Mappings.obfuscatedMap.get(i));
-                i += 1;
+        if (!devmode) {
+            for (int i = 0; i < Mappings.obfuscatedMap.size(); ) {
+                if (Mappings.nonObfuscatedMap.get(i) != null) {
+                    textv2 = textv2.replace(Mappings.nonObfuscatedMap.get(i), Mappings.obfuscatedMap.get(i));
+                    i += 1;
+                }
             }
         }
         return textv2;

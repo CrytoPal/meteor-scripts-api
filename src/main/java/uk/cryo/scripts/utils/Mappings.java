@@ -22,8 +22,8 @@ public class Mappings {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 String colune = inputLine.trim();
-                String obf = colune.split(":",99999)[1];
-                String nonObf = colune.split(":",99999)[0];
+                String obf = colune.split(":",99999999)[1];
+                String nonObf = colune.split(":",9999999)[0];
                 obfuscatedMap.add(obf);
                 nonObfuscatedMap.add(nonObf);
             }
