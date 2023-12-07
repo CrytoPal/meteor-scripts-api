@@ -68,4 +68,5 @@ It also uses Luaj to convert your Lua code to Java code and execture it. My API 
 ### Credits
 - [Jython](https://www.jython.org/) for their Library.
 - [Walper](https://adfoc.us/81974998480112) (Pegasus) for the Inspiration + code I used
+- [Tympanic](https://github.com/tympanicblock61) (zombi) for the improved event code
 - [Luaj](https://github.com/luaj/luaj) for Lua Library
