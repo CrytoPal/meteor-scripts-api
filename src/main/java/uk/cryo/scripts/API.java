@@ -11,6 +11,7 @@ import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.utils.Utils;
+import meteordevelopment.meteorclient.utils.misc.Version;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.nbt.NbtCompound;
@@ -71,28 +72,29 @@ public class API extends MeteorAddon {
                     translationPython.exec(readFileAsString(s.getAbsolutePath()));
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
-                        {
-                            for (PyObject name : translationPython.getLocals().asIterable()) {
-                                PyObject realObject = translationPython.get(name.asString());
-                                String classType = realObject.getType().getName();
-                                if (classType.equals("function") && realObject.__findattr__("__wrapped__") != null) {
-                                    PyObject wrapped = realObject.__getattr__("__wrapped__");
-                                    if (wrapped.__finditem__("event") != null && wrapped.__finditem__("class") != null && wrapped.__finditem__("func") != null && super.isActive()) {
-                                        PyObject wrapperEvent = wrapped.__getitem__(Py.newString("event"));
-                                        PyObject codeObject = wrapped.__getitem__(Py.newString("func")).__getattr__("__code__");
-                                        PyObject argNames = codeObject.__getattr__("co_varnames");
-                                        PyString[] argNamesArray = (PyString[]) argNames.__tojava__(PyString[].class);
-                                        JythonListener listener = new JythonListener<>(this, ((PyType) wrapperEvent).getProxyType(), translationPython, name.asString(), argNamesArray.length >= 1);
-                                        MeteorClient.EVENT_BUS.subscribe(listener);
-                                    }
-                                }
-                            }
-                        }
+                        JythonListener listener;
 
                         @Override
                         public void onActivate() {
                             if (translationPython.getLocals().__finditem__("onActivate") != null) {
                                 try {translationPython.exec("onActivate()");} catch (Exception ignored) {}
+                            }
+                            {
+                                for (PyObject name : translationPython.getLocals().asIterable()) {
+                                    PyObject realObject = translationPython.get(name.asString());
+                                    String classType = realObject.getType().getName();
+                                    if (classType.equals("function") && realObject.__findattr__("__wrapped__") != null) {
+                                        PyObject wrapped = realObject.__getattr__("__wrapped__");
+                                        if (wrapped.__finditem__("event") != null && wrapped.__finditem__("class") != null && wrapped.__finditem__("func") != null && super.isActive()) {
+                                            PyObject wrapperEvent = wrapped.__getitem__(Py.newString("event"));
+                                            PyObject codeObject = wrapped.__getitem__(Py.newString("func")).__getattr__("__code__");
+                                            PyObject argNames = codeObject.__getattr__("co_varnames");
+                                            PyString[] argNamesArray = (PyString[]) argNames.__tojava__(PyString[].class);
+                                            listener = new JythonListener<>(this, ((PyType) wrapperEvent).getProxyType(), translationPython, name.asString(), argNamesArray.length >= 1);
+                                            MeteorClient.EVENT_BUS.subscribe(listener);
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -101,6 +103,7 @@ public class API extends MeteorAddon {
                             if (translationPython.getLocals().__finditem__("onDeactivate") != null) {
                                 try {translationPython.exec("onDeactivate()");} catch (Exception ignored) {}
                             }
+                            MeteorClient.EVENT_BUS.unsubscribe(listener);
                         }
 
                         @Override

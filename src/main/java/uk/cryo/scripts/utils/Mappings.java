@@ -17,8 +17,8 @@ public class Mappings {
 
     public static void addMappings() throws IOException {
         try {
-            URL capesList = new URL("https://raw.githubusercontent.com/CrytoPal/mappings/main/mapping.txt");
-            BufferedReader in = new BufferedReader(new InputStreamReader(capesList.openStream()));
+            URL mappings = new URL("https://raw.githubusercontent.com/CrytoPal/mappings/main/mapping.txt");
+            BufferedReader in = new BufferedReader(new InputStreamReader(mappings.openStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 String colune = inputLine.trim();
