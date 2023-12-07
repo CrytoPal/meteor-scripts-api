@@ -67,7 +67,5 @@ It also uses Luaj to convert your Lua code to Java code and execture it. My API 
 
 ### Credits
 - [Jython](https://www.jython.org/) for their Library.
-- [Walper](https://github.com/ridglef/walper-addon) (Pegasus) for the Inspiration + code I used
+- [Walper](https://adfoc.us/81974998480112) (Pegasus) for the Inspiration + code I used
 - [Luaj](https://github.com/luaj/luaj) for Lua Library
-
-
