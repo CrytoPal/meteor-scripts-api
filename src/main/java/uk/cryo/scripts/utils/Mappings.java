@@ -1,34 +1,33 @@
 package uk.cryo.scripts.utils;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
 
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Mappings {
 
-    public static ArrayList<String> obfuscatedMap = new ArrayList<String>();
-    public static ArrayList<String> nonObfuscatedMap = new ArrayList<String>();
+    public static ArrayList<String> obfuscatedMap = new ArrayList<>();
+    public static ArrayList<String> nonObfuscatedMap = new ArrayList<>();
 
-    public static void addMappings() {
-        obfuscatedMap.add("class_310");
-        nonObfuscatedMap.add("MinecraftClient");
-        obfuscatedMap.add("method_1551()");
-        nonObfuscatedMap.add("getInstance()");
-        obfuscatedMap.add("field_1724");
-        nonObfuscatedMap.add("player");
-        obfuscatedMap.add("net.minecraft");
-        nonObfuscatedMap.add("net.minecraft.client");
-        obfuscatedMap.add("class_310");
-        nonObfuscatedMap.add("MinecraftClient");
-        obfuscatedMap.add("net.minecraft");
-        nonObfuscatedMap.add("net.minecraft.text");
-        obfuscatedMap.add("class_2561.method_30163");
-        nonObfuscatedMap.add("Text.of");
-        obfuscatedMap.add("class_2561");
-        nonObfuscatedMap.add("Text");
-        obfuscatedMap.add("method_43496");
-        nonObfuscatedMap.add("sendMessage");
-        obfuscatedMap.add("method_5728");
-        nonObfuscatedMap.add("setSprinting");
+    public static void addMappings() throws IOException {
+        try {
+            URL capesList = new URL("https://raw.githubusercontent.com/CrytoPal/mappings/main/mapping.txt");
+            BufferedReader in = new BufferedReader(new InputStreamReader(capesList.openStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                String colune = inputLine.trim();
+                String obf = colune.split(":",99999)[1];
+                String nonObf = colune.split(":",99999)[0];
+                obfuscatedMap.add(obf);
+                nonObfuscatedMap.add(nonObf);
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

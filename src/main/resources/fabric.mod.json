@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "id": "meteor-scripts",
   "version": "${version}",
-  "name": "Meteor Python Script API",
-  "description": "An Addon that allows Users to create their own modules using python.",
+  "name": "Meteor Multi Language Script API",
+  "description": "An Addon that allows Users to create their own modules using many languages.",
   "authors": [
     "CrytoPal"
   ],
   "contact": {
     "repo": "https://github.com/CrytoPal/meteor-scripts-api"
   },
-  "icon": "assets/template/icon.png",
+  "icon": "assets/scripts/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [

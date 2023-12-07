@@ -17,6 +17,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
@@ -44,7 +45,7 @@ public class API extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing Meteor Scripts");
-        Mappings.addMappings();
+        try { Mappings.addMappings(); } catch (IOException ignored) {}
         LOG.info("Initializing Script Mappings");
 
         if (!SCRIPTS_FOLDER.exists()) SCRIPTS_FOLDER.mkdir();
@@ -66,33 +67,32 @@ public class API extends MeteorAddon {
                         "        wrapped_func.__wrapped__[\"event\"] = self.event\n" +
                         "        wrapped_func.__wrapped__[\"func\"] = func\n" +
                         "        return wrapped_func");
+                    translationPython.set("mc", mc);
                     translationPython.exec(readFileAsString(s.getAbsolutePath()));
 
                     Module mod = new Module(Scripts, s.getName().replace(".py", ""), "") {
-
-                        JythonListener listener;
+                        {
+                            for (PyObject name : translationPython.getLocals().asIterable()) {
+                                PyObject realObject = translationPython.get(name.asString());
+                                String classType = realObject.getType().getName();
+                                if (classType.equals("function") && realObject.__findattr__("__wrapped__") != null) {
+                                    PyObject wrapped = realObject.__getattr__("__wrapped__");
+                                    if (wrapped.__finditem__("event") != null && wrapped.__finditem__("class") != null && wrapped.__finditem__("func") != null && super.isActive()) {
+                                        PyObject wrapperEvent = wrapped.__getitem__(Py.newString("event"));
+                                        PyObject codeObject = wrapped.__getitem__(Py.newString("func")).__getattr__("__code__");
+                                        PyObject argNames = codeObject.__getattr__("co_varnames");
+                                        PyString[] argNamesArray = (PyString[]) argNames.__tojava__(PyString[].class);
+                                        JythonListener listener = new JythonListener<>(this, ((PyType) wrapperEvent).getProxyType(), translationPython, name.asString(), argNamesArray.length >= 1);
+                                        MeteorClient.EVENT_BUS.subscribe(listener);
+                                    }
+                                }
+                            }
+                        }
 
                         @Override
                         public void onActivate() {
                             if (translationPython.getLocals().__finditem__("onActivate") != null) {
                                 try {translationPython.exec("onActivate()");} catch (Exception ignored) {}
-                            }
-                            {
-                                for (PyObject name : translationPython.getLocals().asIterable()) {
-                                    PyObject realObject = translationPython.get(name.asString());
-                                    String classType = realObject.getType().getName();
-                                    if (classType.equals("function") && realObject.__findattr__("__wrapped__") != null) {
-                                        PyObject wrapped = realObject.__getattr__("__wrapped__");
-                                        if (wrapped.__finditem__("event") != null && wrapped.__finditem__("class") != null && wrapped.__finditem__("func") != null && super.isActive()) {
-                                            PyObject wrapperEvent = wrapped.__getitem__(Py.newString("event"));
-                                            PyObject codeObject = wrapped.__getitem__(Py.newString("func")).__getattr__("__code__");
-                                            PyObject argNames = codeObject.__getattr__("co_varnames");
-                                            PyString[] argNamesArray = (PyString[]) argNames.__tojava__(PyString[].class);
-                                            listener = new JythonListener<>(((PyType) wrapperEvent).getProxyType(), translationPython, name.asString(), argNamesArray.length >= 1);
-                                            MeteorClient.EVENT_BUS.subscribe(listener);
-                                        }
-                                    }
-                                }
                             }
                         }
 
@@ -100,18 +100,6 @@ public class API extends MeteorAddon {
                         public void onDeactivate() {
                             if (translationPython.getLocals().__finditem__("onDeactivate") != null) {
                                 try {translationPython.exec("onDeactivate()");} catch (Exception ignored) {}
-                            }
-                            {
-                                for (PyObject name : translationPython.getLocals().asIterable()) {
-                                    PyObject realObject = translationPython.get(name.asString());
-                                    String classType = realObject.getType().getName();
-                                    if (classType.equals("function") && realObject.__findattr__("__wrapped__") != null) {
-                                        PyObject wrapped = realObject.__getattr__("__wrapped__");
-                                        if (wrapped.__finditem__("event") != null && wrapped.__finditem__("class") != null && wrapped.__finditem__("func") != null) {
-                                            MeteorClient.EVENT_BUS.unsubscribe(listener);
-                                        }
-                                    }
-                                }
                             }
                         }
 
